@@ -34,8 +34,8 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/<start>"
-        f"/api/v1.0/<start>/<end><br/>"
+        f"/api/v1.0/temp/start<br/>"
+        f"/api/v1.0/temp/<start>/<end>"
 
     )
 
@@ -69,7 +69,7 @@ def stations():
 
 @app.route("/api/v1.0/tobs")
 def temp_monthly():
-    one_year = dt.date(2017, 8, 23) - dt.timedelta(day=365)
+    one_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
 
     results = sess.query(measure.tobs).\
         filter(measure.station == 'USC00519281').\
@@ -79,12 +79,12 @@ def temp_monthly():
 
     temps = list(np.ravel(results))
 
-    return jsonify({temps: temps})
+    return jsonify(temps=temps)
 
 
 
-app.route("/api/v1.0/<start>")
-app.route("/api/v1.0/<start>/<end>")
+@app.route("/api/v1.0/temp/<start>")
+@app.route("/api/v1.0/temp/<start>/<end>")
 def stats(start=None, end=None):
 
     sel = [func.min(measure.tobs), func.avg(measure.tobs), func.max(measure.tobs)]
@@ -97,7 +97,7 @@ def stats(start=None, end=None):
         sess.close()
 
         temps = list(np.ravel(results))
-        return jsonify(temps)
+        return jsonify(temps=temps)
     
     start = dt.datetime.strptime(start, "%m%d%Y")
     end= dt.datetime.strptime(end, "%m%d%Y")
